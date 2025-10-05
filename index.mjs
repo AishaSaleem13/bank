@@ -1,6 +1,6 @@
 import express from "express"
 import cors from "cors"
-import router from "./Routes/allbanks.mjs"
+import router from "./Routes/banks.mjs"
 
  const app = express()
  app.use(express.json())
