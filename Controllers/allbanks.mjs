@@ -15,26 +15,41 @@ export const getallbanks = async (req, res) => {
 export const postallbanks = async (req, res) => {
   try {
     console.log("text data", req.body);
-    console.log("image", req.file);
-
-    if (!req.file) {
-      return res.status(400).json({ message: "Image not uploaded" });
-    }
+    console.log("image file", req.file);
 
     const { name } = req.body;
+
     if (!name) {
       return res.status(400).json({ message: "Name is required" });
     }
 
+    let imageUrl = null;
+
+    // ✅ Upload image to Cloudinary
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, "banks");
+      imageUrl = result.secure_url;
+    } else {
+      return res.status(400).json({ message: "Image not uploaded" });
+    }
+
+    // ✅ Save to MongoDB
     const allbankspost = new AllBanks({
       name,
-      image: req.file.path
+      image: imageUrl,
     });
 
     await allbankspost.save();
 
-    res.status(201).json({ message: "Bank posted successfully", productAdded: allbankspost });
+    res.status(201).json({
+      message: "Bank posted successfully",
+      bank: allbankspost,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error in postallbanks", error: error.message });
+    console.error(error);
+    res.status(500).json({
+      message: "Error in postallbanks",
+      error: error.message,
+    });
   }
 };
